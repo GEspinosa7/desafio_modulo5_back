@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const schemaCadastroUsuario = require('../validations/schemas/schemaCadastroUsuarios');
 
 const cadastrarUsuario = async (req, res) => {
-  const { nome, email, senha, nome_rest, descricao, categoria_id, taxa_entrega, tempo_entrega_minutos, valor_minimo_pedido } = req.body;
+  const { nome, email, senha, restaurante } = req.body;
 
   try {
     await schemaCadastroUsuario.validate(req.body);
@@ -22,12 +22,12 @@ const cadastrarUsuario = async (req, res) => {
             return knex('restaurante')
               .insert({
                 usuario_id: res[0],
-                nome: nome_rest,
-                descricao,
-                categoria_id,
-                taxa_entrega,
-                tempo_entrega_minutos,
-                valor_minimo_pedido
+                nome: restaurante.nome,
+                descricao: restaurante.descricao,
+                categoria_id: restaurante.idCategoria,
+                taxa_entrega: restaurante.taxaEntrega,
+                tempo_entrega_minutos: restaurante.tempoEntregaEmMinutos,
+                valor_minimo_pedido: restaurante.valorMinimoPedido
               })
           });
       } catch (error) {
