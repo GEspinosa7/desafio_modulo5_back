@@ -8,8 +8,8 @@ const cadastrarUsuario = async (req, res) => {
   try {
     await schemaCadastroUsuario.validate(req.body);
 
-    const usuarioEncontrado = await knex('usuario').where('email', email);
-    if (usuarioEncontrado.length > 0) return res.status(400).json({ erro: 'Este email ja está cadastrado' });
+    const usuarioEncontrado = await knex('usuario').where({ email }).first();
+    if (usuarioEncontrado) return res.status(404).json({ erro: 'Este email ja está cadastrado' });
 
     const cryptSenha = await bcrypt.hash(senha, 10);
 

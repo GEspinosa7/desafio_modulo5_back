@@ -1,13 +1,14 @@
 const express = require('express');
+const filtroLogin = require('./filters/filtroLogin');
+const { login } = require('./controllers/login');
 const { cadastrarUsuario } = require('./controllers/usuarios');
 
 const router = express();
 
-//POST/usuarios
 router.post('/usuarios', cadastrarUsuario);
-//POST/login
+router.post('/login', login);
 
-//abaixo precisa de autenticação 
+router.use(filtroLogin);
 
 //GET/produtos
 //GET/produtos/:id
