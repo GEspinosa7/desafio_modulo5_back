@@ -9,7 +9,7 @@ const login = async (req, res) => {
   try {
     await schemaLogin.validate(req.body);
 
-    const usuario = await knex('usuario').where({ email }).first().debug();
+    const usuario = await knex('usuario').where({ email }).first();
     if (!usuario) return res.status(404).json({ erro: 'Este usuario não foi encontrado' });
 
     const senhaCorreta = await bcrypt.compare(senha, usuario.senha);
@@ -21,7 +21,7 @@ const login = async (req, res) => {
 
     return res.status(200).json({
       usuario: dadosUsuario,
-      token
+      token,
     });
   } catch (error) {
     return res.status(400).json(error.message);
