@@ -102,13 +102,14 @@ const removerProduto = async (req, res) => {
 
   try {
     const restaurante = await knex('restaurante').where('usuario_id', usuario.id);
-    const produto = await knex('produto').where({ restaurante_id: restaurante[0].id, id });
+    const produto = await knex('produto').where({ restaurante_id: restaurante[0].id, id }).first();
 
-    if (produto.length === 0) return res.status(200).json({ erro: 'Produto não encontrado' });
+    if (!produto) return res.status(400).json({ erro: 'Produto não encontrado' });
+
+    if (produto.ativo) return res.status(400).json({ erro: 'Não é possivel remover um produto ativo' });
 
     const { rowCount } = await knex('produto').del().where({ id, restaurante_id: restaurante[0].id });
     if (rowCount === 0) return res.status(400).json({ erro: 'Não foi possível apagar este produto' });
-
 
     return res.status(200).json({ sucesso: 'Produto removido com sucesso' });
   } catch (error) {
