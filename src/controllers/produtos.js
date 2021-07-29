@@ -57,7 +57,7 @@ const cadastrarProduto = async (req, res) => {
     const { rowCount } = await knex('produto').insert(novoProduto);
     if (rowCount === 0) return res.status(400).json({ erro: 'Não foi possível cadastrar este produto' });
 
-    return res.status(200).json({ sucesso: 'Produto cadastrado!' });
+    return res.sendStatus(200);
   } catch (error) {
     return res.status(400).json(error.message);
   }
@@ -87,7 +87,7 @@ const atualizarProduto = async (req, res) => {
     const { rowCount } = await knex('produto').update(novosDadosProduto).where({ id, restaurante_id: restaurante[0].id });
     if (rowCount === 0) return res.status(400).json({ erro: 'Não foi possível atualizar os dados deste produto' });
 
-    return res.status(200).json({ sucesso: 'Produto atualizado!' });
+    return res.sendStatus(200);
   } catch (error) {
     return res.status(400).json(error.message);
   }
@@ -105,7 +105,7 @@ const removerProduto = async (req, res) => {
     const { rowCount } = await knex('produto').del().where({ id, restaurante_id: restaurante[0].id });
     if (rowCount === 0) return res.status(400).json({ erro: 'Não foi possível apagar este produto' });
 
-    return res.status(200).json({ sucesso: 'Produto removido com sucesso' });
+    return res.sendStatus(200);
   } catch (error) {
     return res.status(400).json(error.message);
   }
@@ -121,7 +121,7 @@ const ativarProduto = async (req, res) => {
     const { rowCount } = await knex('produto').update({ 'ativo': true }).where({ id, restaurante_id: restaurante[0].id });
     if (rowCount === 0) return res.status(400).json({ erro: 'Não foi possível ativar este produto' });
 
-    return res.status(200).json({ sucesso: 'Produto ativado' });
+    return res.sendStatus(200);
   } catch (error) {
     return res.status(400).json(error.message);
   }
@@ -137,7 +137,7 @@ const desativarProduto = async (req, res) => {
     const { rowCount } = await knex('produto').update({ 'ativo': false }).where({ id, restaurante_id: restaurante[0].id });
     if (rowCount === 0) return res.status(400).json({ erro: 'Não foi possível desativar este produto' });
 
-    return res.status(200).json();
+    return res.sendStatus(200);
   } catch (error) {
     return res.status(400).json(error.message);
   }

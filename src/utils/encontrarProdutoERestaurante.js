@@ -5,7 +5,7 @@ const encontrarProdutoERestaurante = async (usuario, id) => {
     const restaurante = await knex('restaurante').where('usuario_id', usuario.id);
     const produto = await knex('produto').where({ restaurante_id: restaurante[0].id, id }).first();
 
-    if (!produto) return res.status(400).json({ erro: 'Produto não encontrado' });
+    if (!produto) return res.status(404).json({ erro: 'Produto não encontrado' });
 
     return { produto, restaurante };
   } catch (error) {
