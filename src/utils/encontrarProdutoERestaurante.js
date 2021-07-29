@@ -1,11 +1,16 @@
 const knex = require('../database/conexao');
 
-const encontrarProdutoERestaurante = async (usuario, id) => {
+const encontrarProdutoERestaurante = async (usuario, res, id) => {
   try {
-    const restaurante = await knex('restaurante').where('usuario_id', usuario.id);
-    const produto = await knex('produto').where({ restaurante_id: restaurante[0].id, id }).first();
+    let restaurante, produto;
+    if (id) {
+      restaurante = await knex('restaurante').where('usuario_id', usuario.id);
+      produto = await knex('produto').where({ restaurante_id: restaurante[0].id, id }).first();
 
-    if (!produto) return res.status(404).json({ erro: 'Produto não encontrado' });
+      if (!produto) return res.status(404).json({ erro: 'Produto não encontrado' });
+    } else {
+      restaurante = await knex('restaurante').where('usuario_id', usuario.id);
+    }
 
     return { produto, restaurante };
   } catch (error) {

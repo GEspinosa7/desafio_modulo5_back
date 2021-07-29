@@ -13,7 +13,6 @@ const cadastrarUsuario = async (req, res) => {
 
     const cryptSenha = await bcrypt.hash(senha, 10);
 
-
     knex('usuario')
       .insert({ nome, email, senha: cryptSenha })
       .returning('id')

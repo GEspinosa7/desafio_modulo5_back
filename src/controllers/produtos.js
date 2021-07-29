@@ -22,10 +22,7 @@ const obterProduto = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const restaurante = await knex('restaurante').where('usuario_id', usuario.id);
-    const produto = await knex('produto').where({ restaurante_id: restaurante[0].id, id });
-
-    if (produto.length === 0) return res.status(400).json({ erro: 'Produto não encontrado' });
+    const { produto } = await encontrarProdutoERestaurante(usuario, res, id);
 
     return res.status(200).json(produto);
   } catch (error) {
@@ -38,7 +35,7 @@ const cadastrarProduto = async (req, res) => {
   const { nome, descricao, preco, ativo, permiteObservacoes } = req.body;
 
   try {
-    const restaurante = await knex('restaurante').where('usuario_id', usuario.id);
+    const { restaurante } = await encontrarProdutoERestaurante(usuario, res);
 
     await schemaCadastroProduto.validate(req.body);
 
@@ -74,7 +71,7 @@ const atualizarProduto = async (req, res) => {
   try {
     await schemaAtualizacaoProdutos.validate(req.body);
 
-    const { restaurante } = await encontrarProdutoERestaurante(usuario, id);
+    const { restaurante } = await encontrarProdutoERestaurante(usuario, res, id);
 
     const novosDadosProduto = {
       nome,
@@ -99,7 +96,7 @@ const removerProduto = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const { produto, restaurante } = await encontrarProdutoERestaurante(usuario, id);
+    const { produto, restaurante } = await encontrarProdutoERestaurante(usuario, res, id);
     if (produto.ativo) return res.status(400).json({ erro: 'Não é possivel remover um produto ativo' });
 
     const { rowCount } = await knex('produto').del().where({ id, restaurante_id: restaurante[0].id });
@@ -116,7 +113,7 @@ const ativarProduto = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const { restaurante } = await encontrarProdutoERestaurante(usuario, id);
+    const { restaurante } = await encontrarProdutoERestaurante(usuario, res, id);
 
     const { rowCount } = await knex('produto').update({ 'ativo': true }).where({ id, restaurante_id: restaurante[0].id });
     if (rowCount === 0) return res.status(400).json({ erro: 'Não foi possível ativar este produto' });
@@ -132,7 +129,7 @@ const desativarProduto = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const { restaurante } = await encontrarProdutoERestaurante(usuario, id);
+    const { restaurante } = await encontrarProdutoERestaurante(usuario, res, id);
 
     const { rowCount } = await knex('produto').update({ 'ativo': false }).where({ id, restaurante_id: restaurante[0].id });
     if (rowCount === 0) return res.status(400).json({ erro: 'Não foi possível desativar este produto' });
