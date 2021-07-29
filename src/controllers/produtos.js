@@ -24,7 +24,7 @@ const obterProduto = async (req, res) => {
     const restaurante = await knex('restaurante').where('usuario_id', usuario.id);
     const produto = await knex('produto').where({ restaurante_id: restaurante[0].id, id });
 
-    if (!produto) return res.status(400).json({ erro: 'Produto não encontrado' });
+    if (produto.length === 0) return res.status(400).json({ erro: 'Produto não encontrado' });
 
     return res.status(200).json(produto);
   } catch (error) {
