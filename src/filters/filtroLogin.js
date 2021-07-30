@@ -13,9 +13,12 @@ const loginAuth = async (req, res, next) => {
     const usuario = await knex('usuario').where('id', id).first().debug();
     if (!usuario) return res.status(404).json({ erro: 'Este usuario não foi encontrado' });
 
+    const restaurante = await knex('restaurante').where('usuario_id', usuario.id);
+
     const { senha: senhaUsuario, ...dadosUsuario } = usuario;
 
     req.usuario = dadosUsuario;
+    req.restaurante = restaurante;
 
     next();
   } catch (error) {
