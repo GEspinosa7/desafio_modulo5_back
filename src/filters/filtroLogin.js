@@ -10,7 +10,7 @@ const loginAuth = async (req, res, next) => {
 
     const { id } = jwt.verify(token, process.env.SENHA_HASH);
 
-    const usuario = await knex('usuario').where('id', id).first().debug();
+    const usuario = await knex('usuario').where('id', id).first();
     if (!usuario) return res.status(404).json({ erro: 'Este usuario não foi encontrado' });
 
     const restaurante = await knex('restaurante').where('usuario_id', usuario.id);
@@ -22,7 +22,7 @@ const loginAuth = async (req, res, next) => {
 
     next();
   } catch (error) {
-    return res.status(400).json(error.message);
+    return res.status(400).json({ erro: error.message });
   }
 };
 
