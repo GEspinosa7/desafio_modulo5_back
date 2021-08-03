@@ -2,6 +2,14 @@ const knex = require('../database/conexao');
 const schemaCadastroProduto = require('../validations/schemas/schemaCadastroProdutos');
 const schemaAtualizacaoProdutos = require('../validations/schemas/schemaAtualizacaoProdutos');
 const validarAtualizacaoProduto = require('../validations/atualizacaoProduto');
+const encontrarProduto = require('../utils/encontrarProduto');
+
+// const encontrarProduto = async (restaurante, res, id) => {
+//   const produto = await knex('produto').where({ restaurante_id: restaurante[0].id, id }).first();
+//   if (!produto) res.status(404).json({ erro: 'Produto não encontrado' });
+//   return;
+// }
+
 
 const listarProdutos = async (req, res) => {
   const { restaurante } = req;
@@ -11,7 +19,7 @@ const listarProdutos = async (req, res) => {
 
     return res.status(200).json(produtos);
   } catch (error) {
-    return res.status(400).json(error.message);
+    return res.status(400).json({ erro: error.message });
   }
 };
 
@@ -20,12 +28,11 @@ const obterProduto = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const produto = await knex('produto').where({ restaurante_id: restaurante[0].id, id }).first();
-    if (!produto) return res.status(404).json({ erro: 'Produto não encontrado' });
+    const produto = await encontrarProduto(restaurante, res, id);
 
     return res.status(200).json(produto);
   } catch (error) {
-    return res.status(400).json(error.message);
+    return res.status(400).json({ erro: error.message });
   }
 };
 
@@ -53,7 +60,7 @@ const cadastrarProduto = async (req, res) => {
 
     return res.sendStatus(200);
   } catch (error) {
-    return res.status(400).json(error.message);
+    return res.status(400).json({ erro: error.message });
   }
 };
 
@@ -84,7 +91,7 @@ const atualizarProduto = async (req, res) => {
 
     return res.sendStatus(200);
   } catch (error) {
-    return res.status(400).json(error.message);
+    return res.status(400).json({ erro: error.message });
   }
 
 };
@@ -94,8 +101,11 @@ const removerProduto = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const produto = await knex('produto').where({ restaurante_id: restaurante[0].id, id }).first();
-    if (!produto) return res.status(404).json({ erro: 'Produto não encontrado' });
+    const produto = await encontrarProduto(restaurante, res, id);
+
+    if (!produto) {
+      return;
+    }
 
     if (produto.ativo) return res.status(400).json({ erro: 'Não é possivel remover um produto ativo' });
 
@@ -104,7 +114,8 @@ const removerProduto = async (req, res) => {
 
     return res.sendStatus(200);
   } catch (error) {
-    return res.status(400).json(error.message);
+
+    return res.status(400).json({ erro: error.message });
   }
 };
 
@@ -121,7 +132,7 @@ const ativarProduto = async (req, res) => {
 
     return res.sendStatus(200);
   } catch (error) {
-    return res.status(400).json(error.message);
+    return res.status(400).json({ erro: error.message });
   }
 };
 
@@ -138,7 +149,7 @@ const desativarProduto = async (req, res) => {
 
     return res.sendStatus(200);
   } catch (error) {
-    return res.status(400).json(error.message);
+    return res.status(400).json({ erro: error.message });
   }
 };
 
