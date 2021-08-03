@@ -2,7 +2,7 @@ const knex = require('../database/conexao');
 const schemaCadastroProduto = require('../validations/schemas/schemaCadastroProdutos');
 const schemaAtualizacaoProdutos = require('../validations/schemas/schemaAtualizacaoProdutos');
 const validarAtualizacaoProduto = require('../validations/atualizacaoProduto');
-const encontrarProduto = require('../utils/encontrarProduto');
+// const encontrarProduto = require('../utils/encontrarProduto');
 
 // const encontrarProduto = async (restaurante, res, id) => {
 //   const produto = await knex('produto').where({ restaurante_id: restaurante[0].id, id }).first();
