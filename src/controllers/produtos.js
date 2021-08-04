@@ -59,7 +59,7 @@ const cadastrarProduto = async (req, res) => {
     const { rowCount } = await knex('produto').insert(novoProduto);
     if (rowCount === 0) return res.status(400).json({ erro: 'Não foi possível cadastrar este produto' });
 
-    return res.sendStatus(200);
+    return res.status(200).json({ sucesso: 'Produto cadastrado com sucesso' });
   } catch (error) {
     return res.status(400).json({ erro: error.message });
   }
