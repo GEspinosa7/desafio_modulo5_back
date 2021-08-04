@@ -110,7 +110,7 @@ const removerProduto = async (req, res) => {
     const { rowCount } = await knex('produto').del().where({ id, restaurante_id: restaurante[0].id });
     if (rowCount === 0) return res.status(400).json({ erro: 'Não foi possível apagar este produto' });
 
-    return res.sendStatus(200);
+    return res.status(200).json({ sucesso: 'Produto removido com sucesso' });
   } catch (error) {
 
     return res.status(400).json({ erro: error.message });
