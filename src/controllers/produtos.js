@@ -87,10 +87,10 @@ const atualizarProduto = async (req, res) => {
       permite_observacoes: permiteObservacoes
     }
 
-    const { rowCount } = await knex('produto').update(novosDadosProduto).where({ id, restaurante_id: restaurante[0].id });
-    if (rowCount === 0) return res.status(400).json({ erro: 'Não foi possível atualizar os dados deste produto' });
+    const produtoAtualizado = await knex('produto').update(novosDadosProduto).where({ id, restaurante_id: restaurante[0].id }).returning('*');
+    if (produtoAtualizado.rowCount === 0) return res.status(400).json({ erro: 'Não foi possível atualizar os dados deste produto' });
 
-    return res.sendStatus(200);
+    return res.status(200).json(produtoAtualizado[0]);
   } catch (error) {
     return res.status(400).json({ erro: error.message });
   }
