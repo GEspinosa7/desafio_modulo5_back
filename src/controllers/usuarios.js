@@ -14,7 +14,7 @@ const cadastrarUsuario = async (req, res) => {
 
     const cryptSenha = await bcrypt.hash(senha, 10);
 
-    knex("usuario")
+    const usuario = Promise.resolve(knex("usuario")
       .insert({ nome, email, senha: cryptSenha })
       .returning("id")
       .then((res) => {
@@ -26,10 +26,13 @@ const cadastrarUsuario = async (req, res) => {
           taxa_entrega: Number(restaurante.taxaEntrega),
           tempo_entrega_minutos: Number(restaurante.tempoEntregaEmMinutos),
           valor_minimo_pedido: Number(restaurante.valorMinimoPedido),
-        });
-      });
+        }).returning("*");
+      }));
 
-    return res.sendStatus(200);
+    usuario.then(function (result) {
+      return res.status(200).json(result[0]);
+    });
+
   } catch (error) {
     return res.status(400).json({ erro: error.message });
   }
