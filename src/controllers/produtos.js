@@ -56,8 +56,8 @@ const cadastrarProduto = async (req, res) => {
       permite_observacoes: permiteObservacoes
     }
 
-    const { rowCount } = await knex('produto').insert(novoProduto);
-    if (rowCount === 0) return res.status(400).json({ erro: 'Não foi possível cadastrar este produto' });
+    const produto = await knex('produto').insert(novoProduto);
+    if (produto.rowCount === 0) return res.status(400).json({ erro: 'Não foi possível cadastrar este produto' });
 
     return res.status(200).json(produto);
   } catch (error) {
