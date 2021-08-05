@@ -3,11 +3,14 @@ const filtroLogin = require('./filters/filtroLogin');
 const { login } = require('./controllers/login');
 const { cadastrarUsuario, atualizarUsuario } = require('./controllers/usuarios');
 const { listarProdutos, obterProduto, cadastrarProduto, removerProduto, ativarProduto, desativarProduto, atualizarProduto } = require('./controllers/produtos');
+const { listarCategorias } = require('./controllers/categoria');
 
 const router = express();
 
 router.post('/usuarios', cadastrarUsuario);
+router.get('/categorias', listarCategorias);
 router.post('/login', login);
+
 
 router.use(filtroLogin);
 

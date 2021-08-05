@@ -19,6 +19,9 @@ VALUES
 ('Italiana'),
 ('Árabe');
 
+ALTER TABLE categoria
+ADD imagem TEXT;
+
 
 CREATE TABLE IF NOT EXISTS usuario(
 		id SERIAL NOT NULL PRIMARY KEY,
