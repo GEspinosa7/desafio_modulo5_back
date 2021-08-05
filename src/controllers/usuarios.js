@@ -1,6 +1,7 @@
 const knex = require("../database/conexao");
 const bcrypt = require("bcrypt");
 const schemaCadastroUsuario = require("../validations/schemas/schemaCadastroUsuarios");
+const validarAtualizacaoUsuario = require("../validations/atualizacaoUsuario");
 
 const cadastrarUsuario = async (req, res) => {
   const { nome, email, senha, restaurante } = req.body;
@@ -38,4 +39,56 @@ const cadastrarUsuario = async (req, res) => {
   }
 };
 
-module.exports = { cadastrarUsuario };
+const atualizarUsuario = async (req, res) => {
+  const { usuario } = req;
+  const { nome, email, senha, restaurante } = req.body;
+
+  const erro = validarAtualizacaoUsuario(req.body);
+  if (erro) return res.status(400).json({ erro: erro });
+
+  try {
+    const usuarioEncontrado = await knex("usuario").where({ email }).whereNot({ id: usuario.id }).first();
+    if (usuarioEncontrado) return res.status(409).json({ erro: "Este email ja está cadastrado" });
+
+    let novosDadosUsuario;
+    if (senha) {
+      const cryptSenha = await bcrypt.hash(senha, 10);
+      novosDadosUsuario = await knex('usuario').update({ nome, email, senha: cryptSenha }).where({ id: usuario.id }).returning('*');
+    } else {
+      novosDadosUsuario = await knex('usuario').update(req.body).where({ id: usuario.id }).returning('*');
+    }
+    if (novosDadosUsuario.rowCount === 0) return res.status(400).json({ Erro: 'Não foi possível atualizar este usuario' });
+
+    const novosDadosRestauranteUsuario = await knex('restaurante').update({
+      nome: restaurante.nome,
+      descricao: restaurante.descricao,
+      categoria_id: restaurante.idCategoria,
+      taxa_entrega: Number(restaurante.taxaEntrega),
+      tempo_entrega_minutos: Number(restaurante.tempoEntregaEmMinutos),
+      valor_minimo_pedido: Number(restaurante.valorMinimoPedido),
+    }).where({ id: req.restaurante[0].id, usuario_id: usuario.id }).returning('*');
+
+    if (novosDadosRestauranteUsuario.rowCount === 0) return res.status(400).json({ Erro: 'Não foi possível atualizar os dados do restaurante' });
+
+    const atualizado = {
+      nome: novosDadosUsuario[0].nome,
+      email: novosDadosUsuario[0].email,
+      restaurante: {
+        nome: novosDadosRestauranteUsuario[0].nome,
+        categoria_id: novosDadosRestauranteUsuario[0].categoria_id,
+        taxa_entrega: novosDadosRestauranteUsuario[0].taxa_entrega,
+        tempo_entrega_minutos: novosDadosRestauranteUsuario[0].tempo_entrega_minutos,
+        valor_minimo_pedido: novosDadosRestauranteUsuario[0].valor_minimo_pedido
+      }
+    }
+
+    return res.status(200).json(atualizado);
+  } catch (error) {
+    return res.status(400).json(error.message);
+  }
+}
+
+module.exports = {
+  cadastrarUsuario,
+  atualizarUsuario
+};
