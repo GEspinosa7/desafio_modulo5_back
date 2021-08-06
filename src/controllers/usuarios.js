@@ -1,3 +1,4 @@
+const supabase = require('../supabase');
 const knex = require("../database/conexao");
 const bcrypt = require("bcrypt");
 const schemaCadastroUsuario = require("../validations/schemas/schemaCadastroUsuarios");
@@ -59,6 +60,24 @@ const atualizarUsuario = async (req, res) => {
     }
     if (novosDadosUsuario.rowCount === 0) return res.status(400).json({ Erro: 'Não foi possível atualizar este usuario' });
 
+    const buffer = Buffer.from(restaurante.imagem, 'base64');
+
+    const { error } = await supabase
+      .storage
+      .from(process.env.SUPABASE_BUCKET)
+      .upload(`${restaurante.nome}/${restaurante.nomeImagem}`, buffer);
+
+    if (error) return res.status(400).json({ erro: error.message });
+
+    const { publicURL, error: errorPublicUrl } = supabase
+      .storage
+      .from(process.env.SUPABASE_BUCKET)
+      .getPublicUrl(restaurante.nomeImagem);
+
+    if (errorPublicUrl) return res.status(400).json({ erro: errorPublicUrl.message });
+
+    const imagem_url = publicURL;
+
     const novosDadosRestauranteUsuario = await knex('restaurante').update({
       nome: restaurante.nome,
       descricao: restaurante.descricao,
@@ -66,6 +85,8 @@ const atualizarUsuario = async (req, res) => {
       taxa_entrega: Number(restaurante.taxaEntrega),
       tempo_entrega_minutos: Number(restaurante.tempoEntregaEmMinutos),
       valor_minimo_pedido: Number(restaurante.valorMinimoPedido),
+      nome_imagem: restaurante.nomeImagem,
+      imagem: imagem_url
     }).where({ id: req.restaurante[0].id, usuario_id: usuario.id }).returning('*');
 
     if (novosDadosRestauranteUsuario.rowCount === 0) return res.status(400).json({ Erro: 'Não foi possível atualizar os dados do restaurante' });
@@ -78,7 +99,9 @@ const atualizarUsuario = async (req, res) => {
         categoria_id: novosDadosRestauranteUsuario[0].categoria_id,
         taxa_entrega: novosDadosRestauranteUsuario[0].taxa_entrega,
         tempo_entrega_minutos: novosDadosRestauranteUsuario[0].tempo_entrega_minutos,
-        valor_minimo_pedido: novosDadosRestauranteUsuario[0].valor_minimo_pedido
+        valor_minimo_pedido: novosDadosRestauranteUsuario[0].valor_minimo_pedido,
+        nome_imagem: restaurante.nomeImagem,
+        imagem: imagem_url
       }
     }
 

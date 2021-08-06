@@ -2,6 +2,8 @@ const knex = require('../database/conexao');
 const schemaCadastroProduto = require('../validations/schemas/schemaCadastroProdutos');
 const schemaAtualizacaoProdutos = require('../validations/schemas/schemaAtualizacaoProdutos');
 const validarAtualizacaoProduto = require('../validations/atualizacaoProduto');
+const { uploadImagem } = require('./uploads');
+const supabase = require('../supabase');
 // const encontrarProduto = require('../utils/encontrarProduto');
 
 // const encontrarProduto = async (restaurante, res, id) => {
@@ -39,7 +41,7 @@ const obterProduto = async (req, res) => {
 
 const cadastrarProduto = async (req, res) => {
   const { restaurante } = req;
-  const { nome, descricao, preco, ativo, permiteObservacoes } = req.body;
+  const { nome, descricao, preco, ativo, permiteObservacoes, nomeImagem, imagem } = req.body;
 
   try {
     await schemaCadastroProduto.validate(req.body);
@@ -47,13 +49,33 @@ const cadastrarProduto = async (req, res) => {
     const nomeProdutoEncontrado = await knex('produto').where({ nome, restaurante_id: restaurante[0].id }).first();
     if (nomeProdutoEncontrado) return res.status(404).json({ erro: 'Já existe um produto cadastrado com esse nome' });
 
+    const buffer = Buffer.from(imagem, 'base64');
+
+    const { error } = await supabase
+      .storage
+      .from(process.env.SUPABASE_BUCKET)
+      .upload(`${restaurante[0].nome}/${nomeImagem}`, buffer);
+
+    if (error) return res.status(400).json({ erro: error.message });
+
+    const { publicURL, error: errorPublicUrl } = supabase
+      .storage
+      .from(process.env.SUPABASE_BUCKET)
+      .getPublicUrl(nomeImagem);
+
+    if (errorPublicUrl) return res.status(400).json({ erro: errorPublicUrl.message });
+
+    const imagem_url = publicURL;
+
     const novoProduto = {
       restaurante_id: restaurante[0].id,
       nome,
       descricao,
       preco,
       ativo,
-      permite_observacoes: permiteObservacoes
+      permite_observacoes: permiteObservacoes,
+      nome_imagem: nomeImagem,
+      imagem: imagem_url
     }
 
     const produto = await knex('produto').insert(novoProduto).returning('*');
@@ -68,7 +90,7 @@ const cadastrarProduto = async (req, res) => {
 const atualizarProduto = async (req, res) => {
   const { restaurante } = req;
   const { id } = req.params;
-  const { nome, descricao, preco, ativo, permiteObservacoes } = req.body;
+  const { nome, descricao, preco, ativo, permiteObservacoes, nomeImagem, imagem } = req.body;
 
   const erro = validarAtualizacaoProduto(req.body);
   if (erro) return res.status(400).json({ erro: erro });
@@ -79,12 +101,32 @@ const atualizarProduto = async (req, res) => {
     const produto = await knex('produto').where({ restaurante_id: restaurante[0].id, id }).first();
     if (!produto) return res.status(404).json({ erro: 'Produto não encontrado' });
 
+    const buffer = Buffer.from(imagem, 'base64');
+
+    const { error } = await supabase
+      .storage
+      .from(process.env.SUPABASE_BUCKET)
+      .upload(`${restaurante[0].nome}/${nomeImagem}`, buffer);
+
+    if (error) return res.status(400).json({ erro: error.message });
+
+    const { publicURL, error: errorPublicUrl } = supabase
+      .storage
+      .from(process.env.SUPABASE_BUCKET)
+      .getPublicUrl(nomeImagem);
+
+    if (errorPublicUrl) return res.status(400).json({ erro: errorPublicUrl.message });
+
+    const imagem_url = publicURL;
+
     const novosDadosProduto = {
       nome,
       descricao,
       preco,
       ativo,
-      permite_observacoes: permiteObservacoes
+      permite_observacoes: permiteObservacoes,
+      nome_imagem: nomeImagem,
+      imagem: imagem_url
     }
 
     const produtoAtualizado = await knex('produto').update(novosDadosProduto).where({ id, restaurante_id: restaurante[0].id }).returning('*');
