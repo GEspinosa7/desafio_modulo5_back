@@ -43,6 +43,12 @@ CREATE TABLE IF NOT EXISTS restaurante(
   	FOREIGN KEY(categoria_id) REFERENCES categoria(id)
 );
 
+ALTER TABLE restaurante
+ADD imagem TEXT;
+
+ALTER TABLE restaurante
+ADD nome_imagem VARCHAR(50);
+
 CREATE TABLE IF NOT EXISTS produto(
 		id SERIAL NOT NULL PRIMARY KEY,
   	nome VARCHAR(50) NOT NULL,
@@ -53,3 +59,9 @@ CREATE TABLE IF NOT EXISTS produto(
   	restaurante_id INTEGER NOT NULL,
 		FOREIGN KEY(restaurante_id) REFERENCES restaurante(id) 	
 );
+
+ALTER TABLE produto
+ADD imagem TEXT;
+
+ALTER TABLE produto
+ADD nome_imagem VARCHAR(50);
