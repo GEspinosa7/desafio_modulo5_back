@@ -2,7 +2,6 @@ const knex = require('../database/conexao');
 const schemaCadastroProduto = require('../validations/schemas/schemaCadastroProdutos');
 const schemaAtualizacaoProdutos = require('../validations/schemas/schemaAtualizacaoProdutos');
 const validarAtualizacaoProduto = require('../validations/atualizacaoProduto');
-const { uploadImagem } = require('./uploads');
 const supabase = require('../supabase');
 // const encontrarProduto = require('../utils/encontrarProduto');
 
