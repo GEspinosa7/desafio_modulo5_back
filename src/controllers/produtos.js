@@ -34,6 +34,8 @@ const cadastrarProduto = async (req, res) => {
   const { restaurante } = req;
   const { nome, descricao, preco, ativo, permiteObservacoes, nomeImagem, imagem } = req.body;
 
+  if (imagem === null) return res.status(400).json({ erro: 'A imagem está recebendo um tipo inválido!' });
+
   try {
     await schemaCadastroProduto.validate(req.body);
 
@@ -75,6 +77,7 @@ const atualizarProduto = async (req, res) => {
 
   const erro = validarAtualizacaoProduto(req.body);
   if (erro) return res.status(400).json({ erro: erro });
+
 
   try {
     await schemaAtualizacaoProdutos.validate(req.body);
