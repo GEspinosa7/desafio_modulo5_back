@@ -12,6 +12,9 @@ const login = async (req, res) => {
     const usuario = await knex('usuario').where({ email }).first();
     if (!usuario) return res.status(404).json({ erro: 'Este usuario não foi encontrado' });
 
+    const restaurante = await knex('restaurante').where({ usuario_id: usuario.id });
+    if (!restaurante) return res.status(404).json({ erro: 'Este restaurante não foi encontrado' });
+
     const senhaCorreta = await bcrypt.compare(senha, usuario.senha);
     if (!senhaCorreta) return res.status(400).json("O email ou senha estão incorretos");
 
@@ -21,6 +24,7 @@ const login = async (req, res) => {
 
     return res.status(200).json({
       usuario: dadosUsuario,
+      restaurante,
       token,
     });
   } catch (error) {
