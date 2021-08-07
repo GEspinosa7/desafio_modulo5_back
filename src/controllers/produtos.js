@@ -34,13 +34,29 @@ const cadastrarProduto = async (req, res) => {
   const { restaurante } = req;
   const { nome, descricao, preco, ativo, permiteObservacoes, nomeImagem, imagem } = req.body;
 
-  if (imagem === null) return res.status(400).json({ erro: 'A imagem está recebendo um tipo inválido!' });
-
   try {
     await schemaCadastroProduto.validate(req.body);
 
     const nomeProdutoEncontrado = await knex('produto').where({ nome, restaurante_id: restaurante[0].id }).first();
     if (nomeProdutoEncontrado) return res.status(404).json({ erro: 'Já existe um produto cadastrado com esse nome' });
+
+    if (!imagem || imagem === null) {
+      const novoProduto = {
+        restaurante_id: restaurante[0].id,
+        nome,
+        descricao,
+        preco,
+        ativo,
+        permite_observacoes: permiteObservacoes,
+        nome_imagem: null,
+        imagem: null
+      }
+
+      const produto = await knex('produto').insert(novoProduto).returning('*');
+      if (produto.rowCount === 0) return res.status(400).json({ erro: 'Não foi possível cadastrar este produto' });
+
+      return res.status(200).json(produto[0]);
+    }
 
     const { errorUpload, imagem_url } = await uploadImagem(nomeImagem, imagem, restaurante[0].nome);
     if (errorUpload) {
@@ -78,12 +94,28 @@ const atualizarProduto = async (req, res) => {
   const erro = validarAtualizacaoProduto(req.body);
   if (erro) return res.status(400).json({ erro: erro });
 
-
   try {
     await schemaAtualizacaoProdutos.validate(req.body);
 
     const produto = await knex('produto').where({ restaurante_id: restaurante[0].id, id }).first();
     if (!produto) return res.status(404).json({ erro: 'Produto não encontrado' });
+
+    if (!imagem || imagem === null) {
+      const novosDadosProduto = {
+        nome,
+        descricao,
+        preco,
+        ativo,
+        permite_observacoes: permiteObservacoes,
+        nome_imagem: null,
+        imagem: null
+      }
+
+      const produtoAtualizado = await knex('produto').update(novosDadosProduto).where({ id, restaurante_id: restaurante[0].id }).returning('*');
+      if (produtoAtualizado.rowCount === 0) return res.status(400).json({ erro: 'Não foi possível atualizar os dados deste produto' });
+
+      return res.status(200).json(produtoAtualizado[0]);
+    }
 
     const { errorUpload, imagem_url } = await uploadImagem(nomeImagem, imagem, restaurante[0].nome);
     if (errorUpload) {
