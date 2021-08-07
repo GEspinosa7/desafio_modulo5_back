@@ -58,13 +58,19 @@ const cadastrarProduto = async (req, res) => {
       return res.status(200).json(produto[0]);
     }
 
-    const { errorUpload, imagem_url } = await uploadImagem(nomeImagem, imagem, restaurante[0].nome);
+    const nomeRestauranteFormatado = restaurante[0].nome.trim().replace(/\s/g, '_');
+    const nomeImagemFormatada = nomeImagem.trim().replace(/\s/g, '_');
+
+    const { errorUpload, imagem_url } = await uploadImagem(nomeImagemFormatada, imagem, nomeRestauranteFormatado);
     if (errorUpload) {
       if (errorUpload === `duplicate key value violates unique constraint \"bucketid_objname\"`) return res.status(400).json({
-        erro: "Esta imagem é a mesma da anterior!"
+        erro: "Existe uma imagem igual a esta em outro produto!"
       });
       return res.status(400).json({ erro: errorUpload });
     }
+
+    const index = imagem_url.indexOf(`${nomeImagemFormatada}`);
+    const url_formatada = `${imagem_url.slice(' ', index)}${nomeRestauranteFormatado}/${nomeImagemFormatada}`;
 
     const novoProduto = {
       restaurante_id: restaurante[0].id,
@@ -74,7 +80,7 @@ const cadastrarProduto = async (req, res) => {
       ativo,
       permite_observacoes: permiteObservacoes,
       nome_imagem: nomeImagem,
-      imagem: imagem_url
+      imagem: url_formatada
     }
 
     const produto = await knex('produto').insert(novoProduto).returning('*');
