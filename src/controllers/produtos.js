@@ -2,15 +2,7 @@ const knex = require('../database/conexao');
 const schemaCadastroProduto = require('../validations/schemas/schemaCadastroProdutos');
 const schemaAtualizacaoProdutos = require('../validations/schemas/schemaAtualizacaoProdutos');
 const validarAtualizacaoProduto = require('../validations/atualizacaoProduto');
-const supabase = require('../supabase');
-// const encontrarProduto = require('../utils/encontrarProduto');
-
-// const encontrarProduto = async (restaurante, res, id) => {
-//   const produto = await knex('produto').where({ restaurante_id: restaurante[0].id, id }).first();
-//   if (!produto) res.status(404).json({ erro: 'Produto não encontrado' });
-//   return;
-// }
-
+const uploadImagem = require('../utils/uploads');
 
 const listarProdutos = async (req, res) => {
   const { restaurante } = req;
@@ -48,23 +40,13 @@ const cadastrarProduto = async (req, res) => {
     const nomeProdutoEncontrado = await knex('produto').where({ nome, restaurante_id: restaurante[0].id }).first();
     if (nomeProdutoEncontrado) return res.status(404).json({ erro: 'Já existe um produto cadastrado com esse nome' });
 
-    const buffer = Buffer.from(imagem, 'base64');
-
-    const { error } = await supabase
-      .storage
-      .from(process.env.SUPABASE_BUCKET)
-      .upload(`${restaurante[0].nome}/${nomeImagem}`, buffer);
-
-    if (error) return res.status(400).json({ erro: error.message });
-
-    const { publicURL, error: errorPublicUrl } = supabase
-      .storage
-      .from(process.env.SUPABASE_BUCKET)
-      .getPublicUrl(nomeImagem);
-
-    if (errorPublicUrl) return res.status(400).json({ erro: errorPublicUrl.message });
-
-    const imagem_url = publicURL;
+    const { errorUpload, imagem_url } = await uploadImagem(nomeImagem, imagem, restaurante[0].nome);
+    if (errorUpload) {
+      if (errorUpload === `duplicate key value violates unique constraint \"bucketid_objname\"`) return res.status(400).json({
+        erro: "Esta imagem é a mesma da anterior!"
+      });
+      return res.status(400).json({ erro: errorUpload });
+    }
 
     const novoProduto = {
       restaurante_id: restaurante[0].id,
@@ -100,23 +82,13 @@ const atualizarProduto = async (req, res) => {
     const produto = await knex('produto').where({ restaurante_id: restaurante[0].id, id }).first();
     if (!produto) return res.status(404).json({ erro: 'Produto não encontrado' });
 
-    const buffer = Buffer.from(imagem, 'base64');
-
-    const { error } = await supabase
-      .storage
-      .from(process.env.SUPABASE_BUCKET)
-      .upload(`${restaurante[0].nome}/${nomeImagem}`, buffer);
-
-    if (error) return res.status(400).json({ erro: error.message });
-
-    const { publicURL, error: errorPublicUrl } = supabase
-      .storage
-      .from(process.env.SUPABASE_BUCKET)
-      .getPublicUrl(nomeImagem);
-
-    if (errorPublicUrl) return res.status(400).json({ erro: errorPublicUrl.message });
-
-    const imagem_url = publicURL;
+    const { errorUpload, imagem_url } = await uploadImagem(nomeImagem, imagem, restaurante[0].nome);
+    if (errorUpload) {
+      if (errorUpload === `duplicate key value violates unique constraint \"bucketid_objname\"`) return res.status(400).json({
+        erro: "Esta imagem é a mesma da anterior!"
+      });
+      return res.status(400).json({ erro: errorUpload });
+    }
 
     const novosDadosProduto = {
       nome,

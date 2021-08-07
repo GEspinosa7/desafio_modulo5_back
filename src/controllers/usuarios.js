@@ -1,8 +1,8 @@
-const supabase = require('../supabase');
 const knex = require("../database/conexao");
 const bcrypt = require("bcrypt");
 const schemaCadastroUsuario = require("../validations/schemas/schemaCadastroUsuarios");
 const validarAtualizacaoUsuario = require("../validations/atualizacaoUsuario");
+const uploadImagem = require('../utils/uploads');
 
 const cadastrarUsuario = async (req, res) => {
   const { nome, email, senha, restaurante } = req.body;
@@ -60,23 +60,13 @@ const atualizarUsuario = async (req, res) => {
     }
     if (novosDadosUsuario.rowCount === 0) return res.status(400).json({ Erro: 'Não foi possível atualizar este usuario' });
 
-    const buffer = Buffer.from(restaurante.imagem, 'base64');
-
-    const { error } = await supabase
-      .storage
-      .from(process.env.SUPABASE_BUCKET)
-      .upload(`${restaurante.nome}/${restaurante.nomeImagem}`, buffer);
-
-    if (error) return res.status(400).json({ erro: error.message });
-
-    const { publicURL, error: errorPublicUrl } = supabase
-      .storage
-      .from(process.env.SUPABASE_BUCKET)
-      .getPublicUrl(restaurante.nomeImagem);
-
-    if (errorPublicUrl) return res.status(400).json({ erro: errorPublicUrl.message });
-
-    const imagem_url = publicURL;
+    const { errorUpload, imagem_url } = await uploadImagem(restaurante.nomeImagem, restaurante.imagem, restaurante.nome);
+    if (errorUpload) {
+      if (errorUpload === `duplicate key value violates unique constraint \"bucketid_objname\"`) return res.status(400).json({
+        erro: "Esta imagem é a mesma da anterior!"
+      });
+      return res.status(400).json({ erro: errorUpload });
+    }
 
     const novosDadosRestauranteUsuario = await knex('restaurante').update({
       nome: restaurante.nome,
