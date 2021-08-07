@@ -43,6 +43,7 @@ const cadastrarUsuario = async (req, res) => {
 const atualizarUsuario = async (req, res) => {
   const { usuario } = req;
   const { nome, email, senha, restaurante } = req.body;
+  const { authorization } = req.headers;
 
   const erro = validarAtualizacaoUsuario(req.body);
   if (erro) return res.status(400).json({ erro: erro });
@@ -78,9 +79,12 @@ const atualizarUsuario = async (req, res) => {
 
       if (novosDadosRestauranteUsuario.rowCount === 0) return res.status(400).json({ Erro: 'Não foi possível atualizar os dados do restaurante' });
 
+      const token = authorization.replace('Bearer', '').trim();
+
       const atualizado = {
         nome: novosDadosUsuario[0].nome,
         email: novosDadosUsuario[0].email,
+        token,
         restaurante: {
           nome: novosDadosRestauranteUsuario[0].nome,
           categoria_id: novosDadosRestauranteUsuario[0].categoria_id,
@@ -114,9 +118,12 @@ const atualizarUsuario = async (req, res) => {
 
     if (novosDadosRestauranteUsuario.rowCount === 0) return res.status(400).json({ Erro: 'Não foi possível atualizar os dados do restaurante' });
 
+    const token = authorization.replace('Bearer', '').trim();
+
     const atualizado = {
       nome: novosDadosUsuario[0].nome,
       email: novosDadosUsuario[0].email,
+      token,
       restaurante: {
         nome: novosDadosRestauranteUsuario[0].nome,
         categoria_id: novosDadosRestauranteUsuario[0].categoria_id,
