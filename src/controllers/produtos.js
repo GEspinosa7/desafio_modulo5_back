@@ -130,7 +130,13 @@ const atualizarProduto = async (req, res) => {
     }
 
     const nomeRestauranteFormatado = restaurante[0].nome.trim().replace(/\s/g, '_');
-    const nomeImagemFormatada = nomeImagem.trim().replace(/\s/g, '_');
+
+    let nomeImagemFormatada;
+    if (nomeImagem) {
+      nomeImagemFormatada = nomeImagem.trim().replace(/\s/g, '_');
+    } else {
+      nomeImagemFormatada = restaurante[0].nomeImagem;
+    }
 
     let { errorUpload, imagem_url } = await uploadImagem(nomeImagemFormatada, imagem, nomeRestauranteFormatado);
     if (errorUpload && errorUpload === `duplicate key value violates unique constraint \"bucketid_objname\"`) {
