@@ -3,6 +3,7 @@ const schemaCadastroProduto = require('../validations/schemas/schemaCadastroProd
 const schemaAtualizacaoProdutos = require('../validations/schemas/schemaAtualizacaoProdutos');
 const validarAtualizacaoProduto = require('../validations/atualizacaoProduto');
 const uploadImagem = require('../utils/uploads');
+const supabase = require('../supabase');
 
 const listarProdutos = async (req, res) => {
   const { restaurante } = req;
@@ -61,11 +62,16 @@ const cadastrarProduto = async (req, res) => {
     const nomeRestauranteFormatado = restaurante[0].nome.trim().replace(/\s/g, '_');
     const nomeImagemFormatada = nomeImagem.trim().replace(/\s/g, '_');
 
-    const { errorUpload, imagem_url } = await uploadImagem(nomeImagemFormatada, imagem, nomeRestauranteFormatado);
-    if (errorUpload) {
-      if (errorUpload === `duplicate key value violates unique constraint \"bucketid_objname\"`) return res.status(400).json({
-        erro: "Existe uma imagem igual a esta em outro produto!"
-      });
+    let { errorUpload, imagem_url } = await uploadImagem(nomeImagemFormatada, imagem, nomeRestauranteFormatado);
+    if (errorUpload && errorUpload === `duplicate key value violates unique constraint \"bucketid_objname\"`) {
+      const { publicURL, error } = supabase
+        .storage
+        .from(nomeRestauranteFormatado)
+        .getPublicUrl(`${nomeRestauranteFormatado}/${nomeImagemFormatada}`);
+
+      imagem_url = publicURL;
+    }
+    if (errorUpload && errorUpload !== `duplicate key value violates unique constraint \"bucketid_objname\"`) {
       return res.status(400).json({ erro: errorUpload });
     }
 
@@ -123,13 +129,24 @@ const atualizarProduto = async (req, res) => {
       return res.status(200).json(produtoAtualizado[0]);
     }
 
-    const { errorUpload, imagem_url } = await uploadImagem(nomeImagem, imagem, restaurante[0].nome);
-    if (errorUpload) {
-      if (errorUpload === `duplicate key value violates unique constraint \"bucketid_objname\"`) return res.status(400).json({
-        erro: "Esta imagem é a mesma da anterior!"
-      });
+    const nomeRestauranteFormatado = restaurante[0].nome.trim().replace(/\s/g, '_');
+    const nomeImagemFormatada = nomeImagem.trim().replace(/\s/g, '_');
+
+    let { errorUpload, imagem_url } = await uploadImagem(nomeImagemFormatada, imagem, nomeRestauranteFormatado);
+    if (errorUpload && errorUpload === `duplicate key value violates unique constraint \"bucketid_objname\"`) {
+      const { publicURL, error } = supabase
+        .storage
+        .from(nomeRestauranteFormatado)
+        .getPublicUrl(`${nomeRestauranteFormatado}/${nomeImagemFormatada}`);
+
+      imagem_url = publicURL;
+    }
+    if (errorUpload && errorUpload !== `duplicate key value violates unique constraint \"bucketid_objname\"`) {
       return res.status(400).json({ erro: errorUpload });
     }
+
+    const index = imagem_url.indexOf(`${nomeImagemFormatada}`);
+    const url_formatada = `${imagem_url.slice(' ', index)}${nomeRestauranteFormatado}/${nomeImagemFormatada}`;
 
     const novosDadosProduto = {
       nome,
@@ -138,7 +155,7 @@ const atualizarProduto = async (req, res) => {
       ativo,
       permite_observacoes: permiteObservacoes,
       nome_imagem: nomeImagem,
-      imagem: imagem_url
+      imagem: url_formatada
     }
 
     const produtoAtualizado = await knex('produto').update(novosDadosProduto).where({ id, restaurante_id: restaurante[0].id }).returning('*');
