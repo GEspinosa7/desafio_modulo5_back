@@ -1,6 +1,6 @@
 const supabase = require('../supabase');
 
-const uploadImagem = async (nome, imagem, restaurante) => {
+const uploadImagem = async (nome, imagem) => {
   const buffer = Buffer.from(imagem, 'base64');
 
   const data = { errorUpload: '', imagem_url: '' };
@@ -8,7 +8,9 @@ const uploadImagem = async (nome, imagem, restaurante) => {
     const { error } = await supabase
       .storage
       .from(process.env.SUPABASE_BUCKET)
-      .upload(`${restaurante}/${nome}`, buffer);
+      .upload(`${nome}`, buffer, {
+
+      });
 
     if (error) {
       data.errorUpload = error.message;

@@ -49,8 +49,8 @@ const cadastrarProduto = async (req, res) => {
         preco,
         ativo,
         permite_observacoes: permiteObservacoes,
-        nome_imagem: null,
-        imagem: null
+        // nome_imagem: null,
+        // imagem: null
       }
 
       const produto = await knex('produto').insert(novoProduto).returning('*');
@@ -59,24 +59,20 @@ const cadastrarProduto = async (req, res) => {
       return res.status(200).json(produto[0]);
     }
 
-    const nomeRestauranteFormatado = restaurante[0].nome.trim().replace(/\s/g, '_');
     const nomeImagemFormatada = nomeImagem.trim().replace(/\s/g, '_');
 
-    let { errorUpload, imagem_url } = await uploadImagem(nomeImagemFormatada, imagem, nomeRestauranteFormatado);
+    let { errorUpload, imagem_url } = await uploadImagem(nomeImagemFormatada, imagem);
     if (errorUpload && errorUpload === `duplicate key value violates unique constraint \"bucketid_objname\"`) {
       const { publicURL, error } = supabase
         .storage
-        .from(nomeRestauranteFormatado)
-        .getPublicUrl(`${nomeRestauranteFormatado}/${nomeImagemFormatada}`);
+        .from(process.env.SUPABASE_BUCKET)
+        .getPublicUrl(nomeImagemFormatada);
 
       imagem_url = publicURL;
     }
     if (errorUpload && errorUpload !== `duplicate key value violates unique constraint \"bucketid_objname\"`) {
       return res.status(400).json({ erro: errorUpload });
     }
-
-    const index = imagem_url.indexOf(`${nomeImagemFormatada}`);
-    const url_formatada = `${imagem_url.slice(' ', index)}${nomeRestauranteFormatado}/${nomeImagemFormatada}`;
 
     const novoProduto = {
       restaurante_id: restaurante[0].id,
@@ -86,7 +82,7 @@ const cadastrarProduto = async (req, res) => {
       ativo,
       permite_observacoes: permiteObservacoes,
       nome_imagem: nomeImagem,
-      imagem: url_formatada
+      imagem: imagem_url
     }
 
     const produto = await knex('produto').insert(novoProduto).returning('*');
@@ -107,6 +103,7 @@ const atualizarProduto = async (req, res) => {
   if (erro) return res.status(400).json({ erro: erro });
 
   try {
+    console.log(nomeImagem);
     await schemaAtualizacaoProdutos.validate(req.body);
 
     const produto = await knex('produto').where({ restaurante_id: restaurante[0].id, id }).first();
@@ -119,8 +116,8 @@ const atualizarProduto = async (req, res) => {
         preco,
         ativo,
         permite_observacoes: permiteObservacoes,
-        nome_imagem: null,
-        imagem: null
+        // nome_imagem: null,
+        // imagem: null
       }
 
       const produtoAtualizado = await knex('produto').update(novosDadosProduto).where({ id, restaurante_id: restaurante[0].id }).returning('*');
@@ -129,7 +126,7 @@ const atualizarProduto = async (req, res) => {
       return res.status(200).json(produtoAtualizado[0]);
     }
 
-    const nomeRestauranteFormatado = restaurante[0].nome.trim().replace(/\s/g, '_');
+    //const nomeRestauranteFormatado = restaurante[0].nome.trim().replace(/\s/g, '_');
 
     let nomeImagemFormatada;
     if (nomeImagem) {
@@ -138,12 +135,12 @@ const atualizarProduto = async (req, res) => {
       nomeImagemFormatada = restaurante[0].nomeImagem;
     }
 
-    let { errorUpload, imagem_url } = await uploadImagem(nomeImagemFormatada, imagem, nomeRestauranteFormatado);
+    let { errorUpload, imagem_url } = await uploadImagem(nomeImagemFormatada, imagem);
     if (errorUpload && errorUpload === `duplicate key value violates unique constraint \"bucketid_objname\"`) {
       const { publicURL, error } = supabase
         .storage
-        .from(nomeRestauranteFormatado)
-        .getPublicUrl(`${nomeRestauranteFormatado}/${nomeImagemFormatada}`);
+        .from(process.env.SUPABASE_BUCKET)
+        .getPublicUrl(nomeImagemFormatada);
 
       imagem_url = publicURL;
     }
@@ -151,8 +148,8 @@ const atualizarProduto = async (req, res) => {
       return res.status(400).json({ erro: errorUpload });
     }
 
-    const index = imagem_url.indexOf(`${nomeImagemFormatada}`);
-    const url_formatada = `${imagem_url.slice(' ', index)}${nomeRestauranteFormatado}/${nomeImagemFormatada}`;
+    //const index = imagem_url.indexOf(`${nomeImagemFormatada}`);
+    //const url_formatada = `${imagem_url.slice(' ', index)}${nomeRestauranteFormatado}/${nomeImagemFormatada}`;
 
     const novosDadosProduto = {
       nome,
@@ -161,7 +158,7 @@ const atualizarProduto = async (req, res) => {
       ativo,
       permite_observacoes: permiteObservacoes,
       nome_imagem: nomeImagem,
-      imagem: url_formatada
+      imagem: imagem_url
     }
 
     const produtoAtualizado = await knex('produto').update(novosDadosProduto).where({ id, restaurante_id: restaurante[0].id }).returning('*');
