@@ -78,14 +78,16 @@ const atualizarUsuario = async (req, res) => {
         nome: novosDadosUsuario[0].nome,
         email: novosDadosUsuario[0].email,
         token,
-        restaurante: {
-          nome: novosDadosRestauranteUsuario[0].nome,
-          descricao: novosDadosRestauranteUsuario[0].descricao,
-          categoria_id: novosDadosRestauranteUsuario[0].categoria_id,
-          taxa_entrega: novosDadosRestauranteUsuario[0].taxa_entrega,
-          tempo_entrega_minutos: novosDadosRestauranteUsuario[0].tempo_entrega_minutos,
-          valor_minimo_pedido: novosDadosRestauranteUsuario[0].valor_minimo_pedido
-        }
+        restaurante: [
+          {
+            nome: novosDadosRestauranteUsuario[0].nome,
+            descricao: novosDadosRestauranteUsuario[0].descricao,
+            categoria_id: novosDadosRestauranteUsuario[0].categoria_id,
+            taxa_entrega: novosDadosRestauranteUsuario[0].taxa_entrega,
+            tempo_entrega_minutos: novosDadosRestauranteUsuario[0].tempo_entrega_minutos,
+            valor_minimo_pedido: novosDadosRestauranteUsuario[0].valor_minimo_pedido
+          }
+        ]
       }
 
       return res.status(200).json(atualizado);
@@ -131,16 +133,18 @@ const atualizarUsuario = async (req, res) => {
       nome: novosDadosUsuario[0].nome,
       email: novosDadosUsuario[0].email,
       token,
-      restaurante: {
-        nome: novosDadosRestauranteUsuario[0].nome,
-        descricao: novosDadosRestauranteUsuario[0].descricao,
-        categoria_id: novosDadosRestauranteUsuario[0].categoria_id,
-        taxa_entrega: novosDadosRestauranteUsuario[0].taxa_entrega,
-        tempo_entrega_minutos: novosDadosRestauranteUsuario[0].tempo_entrega_minutos,
-        valor_minimo_pedido: novosDadosRestauranteUsuario[0].valor_minimo_pedido,
-        nome_imagem: restaurante.nome_imagem,
-        imagem: imagem_url
-      }
+      restaurante: [
+        {
+          nome: novosDadosRestauranteUsuario[0].nome,
+          descricao: novosDadosRestauranteUsuario[0].descricao,
+          categoria_id: novosDadosRestauranteUsuario[0].categoria_id,
+          taxa_entrega: novosDadosRestauranteUsuario[0].taxa_entrega,
+          tempo_entrega_minutos: novosDadosRestauranteUsuario[0].tempo_entrega_minutos,
+          valor_minimo_pedido: novosDadosRestauranteUsuario[0].valor_minimo_pedido,
+          nome_imagem: restaurante.nome_imagem,
+          imagem: imagem_url
+        }
+      ]
     }
 
     return res.status(200).json(atualizado);
