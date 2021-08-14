@@ -16,7 +16,7 @@ const login = async (req, res) => {
     if (!restaurante) return res.status(404).json({ erro: 'Este restaurante não foi encontrado' });
 
     const senhaCorreta = await bcrypt.compare(senha, usuario.senha);
-    if (!senhaCorreta) return res.status(400).json("O email ou senha estão incorretos");
+    if (!senhaCorreta) return res.status(400).json({ erro: "O email ou senha estão incorretos" });
 
     const token = jwt.sign({ id: usuario.id }, process.env.SENHA_HASH);
 
@@ -27,6 +27,7 @@ const login = async (req, res) => {
       restaurante,
       token,
     });
+
   } catch (error) {
     return res.status(400).json({ erro: error.message });
   }
