@@ -22,6 +22,40 @@ VALUES
 ALTER TABLE categoria
 ADD imagem TEXT;
 
+update categoria
+set imagem = 'categoria_diversos.png'
+where id = 1;
+update categoria
+set imagem = 'categoria_lanches.png'
+where id = 2;
+update categoria
+set imagem = 'categoria_carnes.png'
+where id = 3;
+update categoria
+set imagem = 'categoria_massas.png'
+where id = 4;
+update categoria
+set imagem = 'categoria_pizzas.png'
+where id = 5;
+update categoria
+set imagem = 'categoria_japonesa.png'
+where id = 6;
+update categoria
+set imagem = 'categoria_chinesa.png'
+where id = 7;
+update categoria
+set imagem = 'categoria_mexicano.png'
+where id = 8;
+update categoria
+set imagem = 'categoria_brasileira.png'
+where id = 9;
+update categoria
+set imagem = 'categoria_italiana.png'
+where id = 10;
+update categoria
+set imagem = 'categoria_arabe.png'
+where id = 11;
+
 
 CREATE TABLE IF NOT EXISTS usuario(
 		id SERIAL NOT NULL PRIMARY KEY,
@@ -65,3 +99,36 @@ ADD imagem TEXT;
 
 ALTER TABLE produto
 ADD nome_imagem VARCHAR(50);
+
+
+CREATE TABLE IF NOT EXISTS consumidor (
+  	id SERIAL NOT NULL PRIMARY KEY,
+  	nome VARCHAR(100) NOT NULL,
+  	email VARCHAR(100) NOT NULL,
+  	senha TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS pedido (
+	id SERIAL NOT NULL PRIMARY KEY,
+	subtotal INTEGER,
+	taxa_entrega INTEGER,
+	valor_total INTEGER,
+	restaurante_id INTEGER NOT NULL,
+	consumidor_id INTEGER NOT NULL,
+	produto_pedido_id INTEGER NOT NULL,
+	FOREIGN KEY(consumidor_id) REFERENCES consumidor(id),
+	FOREIGN KEY(produto_pedido_id) REFERENCES produto_pedido(id),
+	FOREIGN KEY(restaurante_id) REFERENCES restaurante(id)
+);
+
+ALTER TABLE pedido
+ADD entregue BOOLEAN DEFAULT FALSE;
+
+CREATE TABLE IF NOT EXISTS produto_pedido (
+	id SERIAL NOT NULL PRIMARY KEY,
+	produto_id INTEGER,
+	preco INTEGER NOT NULL,
+	quantidade INTEGER,
+	preco_total INTEGER,
+	FOREIGN KEY(produto_id) REFERENCES produto(id)
+);

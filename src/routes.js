@@ -4,6 +4,7 @@ const { login } = require('./controllers/login');
 const { cadastrarUsuario, atualizarUsuario } = require('./controllers/usuarios');
 const { listarProdutos, obterProduto, cadastrarProduto, removerProduto, ativarProduto, desativarProduto, atualizarProduto } = require('./controllers/produtos');
 const { listarCategorias } = require('./controllers/categoria');
+const { listarPedidos } = require('./controllers/pedidos');
 
 const router = express();
 
@@ -23,5 +24,8 @@ router.put('/produtos/:id', atualizarProduto);
 router.delete('/produtos/:id', removerProduto);
 router.post('/produtos/:id/ativar', ativarProduto);
 router.post('/produtos/:id/desativar', desativarProduto);
+
+router.get('/pedidos', listarPedidos);
+// router.get('/pedidos/:id', obterPedido);
 
 module.exports = router;
