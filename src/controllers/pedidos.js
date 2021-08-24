@@ -128,12 +128,29 @@ const obterPedido = async (req, res) => {
 
 }
 
-// const enviarPedido = async (req, res) => {
+const enviarPedido = async (req, res) => {
+  const { restaurante } = req;
+  const { id } = req.params;
+  const { entregue } = req.body;
 
-// }
+  try {
+    const restaurantes = await knex('restaurante').where({ id: restaurante[0].id }).first();
+    if (!restaurantes) return res.status(404).json({ erro: "Este restaurante não existe" });
+
+    const pedido = await knex('pedido').whereRaw(`pedido.id = ${id} and pedido.restaurante_id = ${restaurante[0].id}`).first();
+    if (!pedido) return res.status(404).json({ erro: "Este pedido não existe" });
+
+    const pedidoEntregue = await knex('pedido').update({ entregue }).whereRaw(`pedido.id = ${id} and pedido.restaurante_id = ${restaurante[0].id}`).returning('*');
+    if (pedidoEntregue.rowCount === 0) return res.status(400).json({ erro: 'Não foi possível enviar o pedido' });
+
+    return res.status(200).json(pedidoEntregue[0]);
+  } catch (error) {
+    return res.status(400).json({ erro: error.message });
+  }
+}
 
 module.exports = {
   listarPedidos,
   obterPedido,
-  // enviarPedido
+  enviarPedido
 }
