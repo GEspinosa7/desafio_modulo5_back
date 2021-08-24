@@ -28,7 +28,6 @@ const listarPedidos = async (req, res) => {
       ).where({ restaurante_id: restaurante[0].id })
       .orderBy('pedido.id');
 
-    const produtosPedido = [];
     for (let item of pedidos) {
       const produtos = await knex('produto_pedido').where({ pedido_id: item.id })
         .join('produto', 'produto.id', '=', 'produto_pedido.produto_id')
@@ -36,8 +35,6 @@ const listarPedidos = async (req, res) => {
           'produto.nome',
           'produto_pedido.quantidade'
         );
-
-      if (produtos.length > 0) produtosPedido.push({ pedido_id: item.id, produtos });
 
       for (let pedido of pedidos) {
         if (pedido.id === item.id) pedido.produtos = produtos
@@ -69,26 +66,67 @@ const listarPedidos = async (req, res) => {
   }
 }
 
-// const obterPedido = async (req, res) => {
-//   const { idRes, idPed } = req.params;
+const obterPedido = async (req, res) => {
+  const { restaurante } = req;
+  const { id } = req.params;
 
-//   try {
-//     const restaurantes = await knex('restaurante').where({ id: idRes }).first();
-//     if (!restaurantes) return res.status(404).json({ erro: "Este restaurante não existe" });
+  try {
+    const restaurantes = await knex('restaurante').where({ id: restaurante[0].id }).first();
+    if (!restaurantes) return res.status(404).json({ erro: "Este restaurante não existe" });
 
-//     const pedido = await knex('pedido').where({ id: idPed, restaurante_id: idRes }).first();
-//     if (!pedido) return res.status(404).json({ erro: "Este pedido não existe" });
+    const pedido = await knex('pedido').whereRaw(`pedido.id = ${id} and pedido.restaurante_id = ${restaurante[0].id}`)
+      .join('consumidor', 'pedido.consumidor_id', '=', 'consumidor.id')
+      .join('endereco', 'pedido.consumidor_id', '=', 'endereco.consumidor_id')
+      .join('produto_pedido', 'pedido.id', '=', 'produto_pedido.pedido_id')
+      .select(
+        'pedido.id',
+        'pedido.valor_total',
+        'pedido.consumidor_id',
+        'pedido.entregue',
+        'consumidor.nome',
+        'endereco.cep',
+        'endereco.endereco',
+        'endereco.complemento',
+        'produto_pedido.quantidade'
+      )
+      .first();
 
-//     const produtosPedido = await knex('produto_pedido').where({ pedido_id: idPed });
+    const produtos = await knex('produto_pedido')
+      .join('produto', 'produto.id', '=', 'produto_pedido.produto_id')
+      .where({ pedido_id: id });
 
-//     pedido.produtos = produtosPedido;
+    const produtosPedido = [];
 
-//     return res.status(200).json(pedido);
-//   } catch (error) {
-//     return res.status(400).json({ erro: error.message });
-//   }
+    for (const item of produtos) {
+      produtosPedido.push({
+        nome: item.nome,
+        quantidade: item.quantidade
+      });
+    }
 
-// }
+    const result = {
+      id: pedido.id,
+      valor_total: pedido.valor_total,
+      entregue: pedido.entregue,
+      consumidor: {
+        id: pedido.consumidor_id,
+        nome: pedido.nome,
+      },
+      consumidor_endereco: {
+        cep: pedido.cep,
+        endereco: pedido.endereco,
+        complemento: pedido.complemento
+      },
+      produtos: produtosPedido
+    }
+
+
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(400).json({ erro: error.message });
+  }
+
+}
 
 // const enviarPedido = async (req, res) => {
 
@@ -96,6 +134,6 @@ const listarPedidos = async (req, res) => {
 
 module.exports = {
   listarPedidos,
-  // obterPedido,
+  obterPedido,
   // enviarPedido
 }
