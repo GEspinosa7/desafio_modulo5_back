@@ -56,7 +56,8 @@ const listarPedidos = async (req, res) => {
           endereco: objeto.endereco,
           complemento: objeto.complemento
         },
-        produtos: objeto.produtos
+        produtos: objeto.produtos,
+        restaurante_id: restaurante[0].id
       })
     }
 
@@ -117,7 +118,8 @@ const obterPedido = async (req, res) => {
         endereco: pedido.endereco,
         complemento: pedido.complemento
       },
-      produtos: produtosPedido
+      produtos: produtosPedido,
+      restaurante_id: restaurante[0].id
     }
 
 
