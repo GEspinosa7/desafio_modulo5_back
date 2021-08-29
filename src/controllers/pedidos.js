@@ -34,7 +34,8 @@ const listarPedidos = async (req, res) => {
         .select(
           'produto.nome',
           'produto_pedido.quantidade',
-          'produto.preco'
+          'produto.preco',
+          'produto.imagem'
         );
 
       for (let pedido of pedidos) {
@@ -103,7 +104,8 @@ const obterPedido = async (req, res) => {
       produtosPedido.push({
         nome: item.nome,
         quantidade: item.quantidade,
-        preco: item.preco
+        preco: item.preco,
+        imagem: item.imagem
       });
     }
 
